@@ -155,7 +155,15 @@
                                                     </div>
                                                     <span class="text-sm font-medium capitalize text-zinc-900 dark:text-zinc-100">{{ $section['type'] }}</span>
                                                 </div>
-                                                <div wire:sort:ignore>
+                                                <div wire:sort:ignore class="flex items-center gap-1">
+                                                    <flux:button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        wire:click="openSectionSettings('{{ $section['id'] }}')"
+                                                        x-on:click="$flux.modal('sectionSettings').show()"
+                                                        class="h-6 w-6 p-0"
+                                                        icon="cog-6-tooth"
+                                                    />
                                                     <flux:button
                                                         variant="ghost"
                                                         size="sm"
@@ -164,18 +172,6 @@
                                                         wire:click="removeSection('{{ $section['id'] }}')"
                                                     />
                                                 </div>
-                                            </div>
-                                            <div class="mt-2" wire:sort:ignore>
-                                                <flux:select
-                                                    size="sm"
-                                                    wire:change="updateSectionPreset('{{ $section['id'] }}', $event.target.value)"
-                                                >
-                                                    @foreach ($this->presets[$section['type']] ?? [] as $presetKey => $presetLabel)
-                                                        <flux:select.option value="{{ $presetKey }}" :selected="$section['preset'] === $presetKey">
-                                                            {{ $presetLabel }}
-                                                        </flux:select.option>
-                                                    @endforeach
-                                                </flux:select>
                                             </div>
                                         </li>
                                     @empty
@@ -456,4 +452,34 @@
             </div>
         </flux:modal>
     @endauth
+
+    <!-- Section Settings Modal -->
+    <flux:modal name="sectionSettings" class="min-w-[22rem]">
+        <div class="space-y-6">
+            @if ($this->editingSection)
+                <div>
+                    <flux:heading size="lg">{{ ucfirst($this->editingSection['type']) }} {{ __('Settings') }}</flux:heading>
+                    <flux:subheading>{{ __('Change the preset and settings for this section.') }}</flux:subheading>
+                </div>
+
+                <flux:select
+                    label="{{ __('Preset') }}"
+                    size="sm"
+                    wire:change="updateSectionPreset('{{ $this->editingSection['id'] }}', $event.target.value)"
+                >
+                    @foreach ($this->presets[$this->editingSection['type']] ?? [] as $presetKey => $presetLabel)
+                        <flux:select.option value="{{ $presetKey }}" :selected="$this->editingSection['preset'] === $presetKey">
+                            {{ $presetLabel }}
+                        </flux:select.option>
+                    @endforeach
+                </flux:select>
+            @endif
+
+            <div class="flex justify-end">
+                <flux:modal.close>
+                    <flux:button variant="primary" wire:click="closeSectionSettings">{{ __('Done') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
 </div>

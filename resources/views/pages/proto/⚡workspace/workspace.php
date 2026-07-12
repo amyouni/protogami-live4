@@ -44,6 +44,8 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
     public ?string $deletingPageId = null;
 
+    public ?string $editingSectionId = null;
+
     public string $saveFilename = '';
 
     public string $currentBrandingPreset = '';
@@ -304,6 +306,16 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         }
     }
 
+    public function openSectionSettings(string $sectionId): void
+    {
+        $this->editingSectionId = $sectionId;
+    }
+
+    public function closeSectionSettings(): void
+    {
+        $this->editingSectionId = null;
+    }
+
     public function updateSectionPreset(string $sectionId, string $preset): void
     {
         foreach ($this->pages as $i => $page) {
@@ -409,6 +421,17 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         $page = $this->findPage($this->selectedPageId);
 
         return $page ? $this->buildPageHtml($page) : '';
+    }
+
+    /** @return array<string, mixed>|null */
+    #[Computed]
+    public function editingSection(): ?array
+    {
+        $page = $this->findPage($this->selectedPageId);
+
+        return $page
+            ? collect($page['sections'])->firstWhere('id', $this->editingSectionId)
+            : null;
     }
 
     /** @return array<string, mixed>|null */
