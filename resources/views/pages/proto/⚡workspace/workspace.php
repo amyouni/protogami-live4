@@ -48,8 +48,6 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
     public string $darkThemePreset = '';
 
-    public string $saveThemeName = '';
-
     public bool $showSitemap = true;
 
     public bool $showSections = true;
@@ -173,7 +171,6 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
         unset($data['name']);
         $this->branding = array_merge($this->branding, $data);
-        $this->currentBrandingPreset = $filename;
 
         Flux::toast(variant: 'success', text: __('Light theme preset applied.'));
     }
@@ -194,7 +191,6 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
         unset($data['name']);
         $this->branding = array_merge($this->branding, $data);
-        $this->currentBrandingPreset = $filename;
 
         Flux::toast(variant: 'success', text: __('Dark theme preset applied.'));
     }
@@ -215,44 +211,6 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
         Flux::modal('saveBranding')->close();
         Flux::toast(variant: 'success', text: __('Branding preset saved.'));
-    }
-
-    public function saveLightTheme(): void
-    {
-        abort_unless(auth()->check(), 403);
-
-        $this->validate(['saveThemeName' => 'required|string|max:60']);
-
-        $filename = app(BrandingService::class)->save($this->saveThemeName, array_merge(
-            ['name' => $this->saveThemeName],
-            $this->branding
-        ));
-
-        $this->lightThemePreset = $filename;
-        $this->currentBrandingPreset = $filename;
-        $this->saveThemeName = '';
-
-        Flux::modal('saveTheme')->close();
-        Flux::toast(variant: 'success', text: __('Light theme saved.'));
-    }
-
-    public function saveDarkTheme(): void
-    {
-        abort_unless(auth()->check(), 403);
-
-        $this->validate(['saveThemeName' => 'required|string|max:60']);
-
-        $filename = app(BrandingService::class)->save($this->saveThemeName, array_merge(
-            ['name' => $this->saveThemeName],
-            $this->branding
-        ));
-
-        $this->darkThemePreset = $filename;
-        $this->currentBrandingPreset = $filename;
-        $this->saveThemeName = '';
-
-        Flux::modal('saveTheme')->close();
-        Flux::toast(variant: 'success', text: __('Dark theme saved.'));
     }
 
     public function addPage(): void

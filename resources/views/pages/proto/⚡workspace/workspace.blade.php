@@ -397,11 +397,6 @@
                                         <flux:select.option value="{{ $preset['filename'] }}" :selected="$lightThemePreset === $preset['filename']">{{ $preset['name'] }}</flux:select.option>
                                     @endforeach
                                 </flux:select>
-                                @auth
-                                    <flux:modal.trigger name="saveLightTheme">
-                                        <flux:button variant="ghost" size="sm" icon="bookmark" class="w-full">{{ __('Save as Light') }}</flux:button>
-                                    </flux:modal.trigger>
-                                @endauth
                             </div>
 
                             <div class="h-px bg-zinc-200 dark:bg-zinc-700"></div>
@@ -418,11 +413,6 @@
                                         <flux:select.option value="{{ $preset['filename'] }}" :selected="$darkThemePreset === $preset['filename']">{{ $preset['name'] }}</flux:select.option>
                                     @endforeach
                                 </flux:select>
-                                @auth
-                                    <flux:modal.trigger name="saveDarkTheme">
-                                        <flux:button variant="ghost" size="sm" icon="bookmark" class="w-full">{{ __('Save as Dark') }}</flux:button>
-                                    </flux:modal.trigger>
-                                @endauth
                             </div>
                         </div>
                     </div>
@@ -506,41 +496,6 @@
                         <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
                     </flux:modal.close>
                     <flux:button variant="primary" wire:click="saveBranding">{{ __('Save') }}</flux:button>
-                </div>
-            </div>
-        </flux:modal>
-    @endauth
-
-    <!-- Save Theme Modals -->
-    @auth
-        <flux:modal name="saveLightTheme" class="min-w-[22rem]">
-            <div class="space-y-6">
-                <div>
-                    <flux:heading size="lg">{{ __('Save Light Theme') }}</flux:heading>
-                    <flux:subheading>{{ __('Save the current branding as the light theme preset.') }}</flux:subheading>
-                </div>
-                <flux:input label="{{ __('Preset name') }}" wire:model="saveThemeName" placeholder="{{ __('e.g. Forest Light') }}" />
-                <div class="flex justify-end gap-2">
-                    <flux:modal.close>
-                        <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
-                    </flux:modal.close>
-                    <flux:button variant="primary" wire:click="saveLightTheme">{{ __('Save') }}</flux:button>
-                </div>
-            </div>
-        </flux:modal>
-
-        <flux:modal name="saveDarkTheme" class="min-w-[22rem]">
-            <div class="space-y-6">
-                <div>
-                    <flux:heading size="lg">{{ __('Save Dark Theme') }}</flux:heading>
-                    <flux:subheading>{{ __('Save the current branding as the dark theme preset.') }}</flux:subheading>
-                </div>
-                <flux:input label="{{ __('Preset name') }}" wire:model="saveThemeName" placeholder="{{ __('e.g. Sunset Dark') }}" />
-                <div class="flex justify-end gap-2">
-                    <flux:modal.close>
-                        <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
-                    </flux:modal.close>
-                    <flux:button variant="primary" wire:click="saveDarkTheme">{{ __('Save') }}</flux:button>
                 </div>
             </div>
         </flux:modal>
