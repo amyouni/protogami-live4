@@ -1,0 +1,47 @@
+{
+    "name": "Blog",
+    "branding": {
+        "primary_color": "#7c3aed",
+        "secondary_color": "#4c1d95",
+        "accent_color": "#f59e0b",
+        "background_color": "#faf9fb",
+        "text_color": "#111827",
+        "font_family": "Poppins"
+    },
+    "pages": [
+        {
+            "id": "home",
+            "name": "Home",
+            "parent_id": null,
+            "order": 0,
+            "sections": [
+                { "id": "s1", "type": "navbar", "preset": "centered" },
+                { "id": "s2", "type": "content", "preset": "hero" },
+                { "id": "s3", "type": "content", "preset": "list" },
+                { "id": "s4", "type": "footer", "preset": "minimal" }
+            ]
+        },
+        {
+            "id": "articles",
+            "name": "Articles",
+            "parent_id": null,
+            "order": 1,
+            "sections": [
+                { "id": "s5", "type": "navbar", "preset": "centered" },
+                { "id": "s6", "type": "content", "preset": "grid" },
+                { "id": "s7", "type": "footer", "preset": "minimal" }
+            ]
+        },
+        {
+            "id": "about",
+            "name": "About",
+            "parent_id": null,
+            "order": 2,
+            "sections": [
+                { "id": "s8", "type": "navbar", "preset": "centered" },
+                { "id": "s9", "type": "content", "preset": "single_column" },
+                { "id": "s10", "type": "footer", "preset": "minimal" }
+            ]
+        }
+    ]
+}

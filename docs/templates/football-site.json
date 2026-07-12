@@ -1,0 +1,80 @@
+{
+    "name": "Football Site",
+    "branding": {
+        "primary_color": "#16a34a",
+        "secondary_color": "#166534",
+        "accent_color": "#facc15",
+        "background_color": "#ffffff",
+        "text_color": "#1f2937",
+        "font_family": "Inter"
+    },
+    "pages": [
+        {
+            "id": "home",
+            "name": "Home",
+            "parent_id": null,
+            "order": 0,
+            "sections": [
+                { "id": "s1", "type": "navbar", "preset": "items_right" },
+                { "id": "s2", "type": "content", "preset": "hero" },
+                { "id": "s3", "type": "content", "preset": "grid" },
+                { "id": "s4", "type": "footer", "preset": "multi_column" }
+            ]
+        },
+        {
+            "id": "fixtures",
+            "name": "Fixtures",
+            "parent_id": null,
+            "order": 1,
+            "sections": [
+                { "id": "s5", "type": "navbar", "preset": "items_right" },
+                { "id": "s6", "type": "content", "preset": "list" },
+                { "id": "s7", "type": "footer", "preset": "simple" }
+            ]
+        },
+        {
+            "id": "teams",
+            "name": "Teams",
+            "parent_id": null,
+            "order": 2,
+            "sections": [
+                { "id": "s8", "type": "navbar", "preset": "items_right" },
+                { "id": "s9", "type": "content", "preset": "grid" },
+                { "id": "s10", "type": "footer", "preset": "simple" }
+            ]
+        },
+        {
+            "id": "first-team",
+            "name": "First Team",
+            "parent_id": "teams",
+            "order": 0,
+            "sections": [
+                { "id": "s11", "type": "navbar", "preset": "items_right" },
+                { "id": "s12", "type": "content", "preset": "features" },
+                { "id": "s13", "type": "footer", "preset": "minimal" }
+            ]
+        },
+        {
+            "id": "youth-team",
+            "name": "Youth Team",
+            "parent_id": "teams",
+            "order": 1,
+            "sections": [
+                { "id": "s14", "type": "navbar", "preset": "items_right" },
+                { "id": "s15", "type": "content", "preset": "single_column" },
+                { "id": "s16", "type": "footer", "preset": "minimal" }
+            ]
+        },
+        {
+            "id": "news",
+            "name": "News",
+            "parent_id": null,
+            "order": 3,
+            "sections": [
+                { "id": "s17", "type": "navbar", "preset": "items_right" },
+                { "id": "s18", "type": "content", "preset": "list" },
+                { "id": "s19", "type": "footer", "preset": "simple" }
+            ]
+        }
+    ]
+}
