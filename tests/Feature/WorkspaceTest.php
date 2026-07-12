@@ -193,14 +193,15 @@ it('uses light theme branding in preview when set', function () {
             'background_color' => '#f0f9ff',
             'text_color' => '#0c4a6e',
             'font_family' => 'Inter',
-        ]);
+        ])
+        ->call('setPreviewTheme', 'light');
 
     $html = $component->get('previewHtml');
 
     expect($html)->toContain('#f0f9ff');
 });
 
-it('falls back to inline branding in preview when no theme is saved', function () {
+it('reflects live branding changes in preview immediately', function () {
     $component = Livewire::test('pages::proto.workspace')
         ->set('branding.background_color', '#abcdef');
 

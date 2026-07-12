@@ -78,6 +78,12 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
     public function setPreviewTheme(string $theme): void
     {
         $this->previewTheme = $theme;
+
+        $saved = $theme === 'dark' ? $this->darkThemeBranding : $this->lightThemeBranding;
+
+        if ($saved !== []) {
+            $this->branding = $saved;
+        }
     }
 
     public function mount(): void
@@ -470,9 +476,7 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
             ->map(fn (array $s) => $snippets->render($s['type'], $s['preset'], ['navItems' => $navItems]) ?? '')
             ->implode("\n");
 
-        $b = $this->previewTheme === 'dark'
-            ? ($this->darkThemeBranding !== [] ? $this->darkThemeBranding : $this->branding)
-            : ($this->lightThemeBranding !== [] ? $this->lightThemeBranding : $this->branding);
+        $b = $this->branding;
         $fontQuery = Str::replace(' ', '+', $b['font_family']);
 
         $interceptScript = <<<'JS'
