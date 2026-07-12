@@ -130,3 +130,16 @@ it('generates preview HTML with dynamic nav and link interception', function () 
         ->and($html)->toContain('data-page="about"')
         ->and($html)->toContain('select-page-from-preview');
 });
+
+it('toggles panel visibility', function () {
+    Livewire::test('pages::proto.workspace')
+        ->assertSet('showSitemap', true)
+        ->call('togglePanel', 'sitemap')
+        ->assertSet('showSitemap', false)
+        ->call('togglePanel', 'sitemap')
+        ->assertSet('showSitemap', true)
+        ->call('togglePanel', 'sections')
+        ->assertSet('showSections', false)
+        ->call('togglePanel', 'branding')
+        ->assertSet('showBranding', false);
+});

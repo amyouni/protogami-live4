@@ -44,6 +44,22 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
     public string $saveBrandingName = '';
 
+    public bool $showSitemap = true;
+
+    public bool $showSections = true;
+
+    public bool $showBranding = true;
+
+    public function togglePanel(string $panel): void
+    {
+        match ($panel) {
+            'sitemap' => $this->showSitemap = ! $this->showSitemap,
+            'sections' => $this->showSections = ! $this->showSections,
+            'branding' => $this->showBranding = ! $this->showBranding,
+            default => null,
+        };
+    }
+
     public function mount(): void
     {
         $this->pages = [
