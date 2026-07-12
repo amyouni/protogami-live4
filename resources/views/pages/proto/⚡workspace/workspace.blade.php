@@ -159,6 +159,12 @@
                     <!-- Live preview -->
                     <div class="flex-1 bg-zinc-100 p-4 dark:bg-zinc-950">
                         <iframe
+                            x-data="{ scrollPos: 0 }"
+                            x-on:load="
+                                $el.contentWindow.scrollTo(0, scrollPos);
+                                setTimeout(() => $el.contentWindow.scrollTo(0, scrollPos), 150);
+                                $el.contentWindow.addEventListener('scroll', () => scrollPos = $el.contentWindow.scrollY);
+                            "
                             srcdoc="{{ $this->previewHtml }}"
                             class="h-full w-full rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-700"
                             title="{{ __('Page preview') }}"
