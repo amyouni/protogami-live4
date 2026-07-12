@@ -23,16 +23,6 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         'font_family' => 'Inter',
     ];
 
-    /** @var array<string, string> */
-    public array $darkBranding = [
-        'primary_color' => '#3b82f6',
-        'secondary_color' => '#1e40af',
-        'accent_color' => '#f59e0b',
-        'background_color' => '#1a1a2e',
-        'text_color' => '#e4e4e7',
-        'font_family' => 'Inter',
-    ];
-
     /** @var list<array<string, mixed>> */
     public array $pages = [];
 
@@ -52,9 +42,13 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
     public string $currentBrandingPreset = '';
 
-    public string $currentDarkBrandingPreset = '';
-
     public string $saveBrandingName = '';
+
+    public string $lightThemePreset = '';
+
+    public string $darkThemePreset = '';
+
+    public string $saveThemeName = '';
 
     public bool $showSitemap = true;
 
@@ -62,9 +56,9 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
     public bool $showBranding = true;
 
-    public string $previewWidth = 'desktop';
+    public bool $showTheme = true;
 
-    public string $brandingTab = 'light';
+    public string $previewWidth = 'desktop';
 
     public string $previewTheme = 'light';
 
@@ -74,6 +68,7 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
             'sitemap' => $this->showSitemap = ! $this->showSitemap,
             'sections' => $this->showSections = ! $this->showSections,
             'branding' => $this->showBranding = ! $this->showBranding,
+            'theme' => $this->showTheme = ! $this->showTheme,
             default => null,
         };
     }
@@ -81,11 +76,6 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
     public function setPreviewWidth(string $width): void
     {
         $this->previewWidth = $width;
-    }
-
-    public function setBrandingTab(string $tab): void
-    {
-        $this->brandingTab = $tab;
     }
 
     public function setPreviewTheme(string $theme): void
@@ -127,7 +117,8 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
         $this->templateName = $data['name'] ?? $filename;
         $this->branding = array_merge($this->branding, $data['branding'] ?? []);
-        $this->darkBranding = array_merge($this->darkBranding, $data['dark_branding'] ?? []);
+        $this->lightThemePreset = $data['light_theme_preset'] ?? '';
+        $this->darkThemePreset = $data['dark_theme_preset'] ?? '';
         $this->pages = $data['pages'];
         $this->selectedPageId = $this->pages[0]['id'] ?? null;
         $this->saveFilename = $filename;
@@ -166,7 +157,7 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         Flux::toast(variant: 'success', text: __('Branding preset applied.'));
     }
 
-    public function updatedCurrentDarkBrandingPreset(string $filename): void
+    public function updatedLightThemePreset(string $filename): void
     {
         if ($filename === '') {
             return;
@@ -181,9 +172,31 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         }
 
         unset($data['name']);
-        $this->darkBranding = array_merge($this->darkBranding, $data);
+        $this->branding = array_merge($this->branding, $data);
+        $this->currentBrandingPreset = $filename;
 
-        Flux::toast(variant: 'success', text: __('Dark branding preset applied.'));
+        Flux::toast(variant: 'success', text: __('Light theme preset applied.'));
+    }
+
+    public function updatedDarkThemePreset(string $filename): void
+    {
+        if ($filename === '') {
+            return;
+        }
+
+        $data = app(BrandingService::class)->load($filename);
+
+        if (! $data) {
+            Flux::toast(variant: 'danger', text: __('Could not load branding preset.'));
+
+            return;
+        }
+
+        unset($data['name']);
+        $this->branding = array_merge($this->branding, $data);
+        $this->currentBrandingPreset = $filename;
+
+        Flux::toast(variant: 'success', text: __('Dark theme preset applied.'));
     }
 
     public function saveBranding(): void
@@ -192,22 +205,54 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
         $this->validate(['saveBrandingName' => 'required|string|max:60']);
 
-        $activeBranding = $this->brandingTab === 'dark' ? $this->darkBranding : $this->branding;
-
         $filename = app(BrandingService::class)->save($this->saveBrandingName, array_merge(
             ['name' => $this->saveBrandingName],
-            $activeBranding
+            $this->branding
         ));
 
-        if ($this->brandingTab === 'dark') {
-            $this->currentDarkBrandingPreset = $filename;
-        } else {
-            $this->currentBrandingPreset = $filename;
-        }
+        $this->currentBrandingPreset = $filename;
         $this->saveBrandingName = '';
 
         Flux::modal('saveBranding')->close();
         Flux::toast(variant: 'success', text: __('Branding preset saved.'));
+    }
+
+    public function saveLightTheme(): void
+    {
+        abort_unless(auth()->check(), 403);
+
+        $this->validate(['saveThemeName' => 'required|string|max:60']);
+
+        $filename = app(BrandingService::class)->save($this->saveThemeName, array_merge(
+            ['name' => $this->saveThemeName],
+            $this->branding
+        ));
+
+        $this->lightThemePreset = $filename;
+        $this->currentBrandingPreset = $filename;
+        $this->saveThemeName = '';
+
+        Flux::modal('saveTheme')->close();
+        Flux::toast(variant: 'success', text: __('Light theme saved.'));
+    }
+
+    public function saveDarkTheme(): void
+    {
+        abort_unless(auth()->check(), 403);
+
+        $this->validate(['saveThemeName' => 'required|string|max:60']);
+
+        $filename = app(BrandingService::class)->save($this->saveThemeName, array_merge(
+            ['name' => $this->saveThemeName],
+            $this->branding
+        ));
+
+        $this->darkThemePreset = $filename;
+        $this->currentBrandingPreset = $filename;
+        $this->saveThemeName = '';
+
+        Flux::modal('saveTheme')->close();
+        Flux::toast(variant: 'success', text: __('Dark theme saved.'));
     }
 
     public function addPage(): void
@@ -358,7 +403,8 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         $filename = app(TemplateService::class)->save($this->saveFilename, [
             'name' => $this->templateName,
             'branding' => $this->branding,
-            'dark_branding' => $this->darkBranding,
+            'light_theme_preset' => $this->lightThemePreset,
+            'dark_theme_preset' => $this->darkThemePreset,
             'pages' => $this->pages,
         ]);
 
@@ -493,7 +539,18 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
             ->map(fn (array $s) => $snippets->render($s['type'], $s['preset'], ['navItems' => $navItems]) ?? '')
             ->implode("\n");
 
-        $b = $this->previewTheme === 'dark' ? $this->darkBranding : $this->branding;
+        $presetFilename = $this->previewTheme === 'dark'
+            ? $this->darkThemePreset
+            : $this->lightThemePreset;
+
+        $b = $this->branding;
+        if ($presetFilename !== '') {
+            $loaded = app(BrandingService::class)->load($presetFilename);
+            if ($loaded) {
+                unset($loaded['name']);
+                $b = array_merge($this->branding, $loaded);
+            }
+        }
         $fontQuery = Str::replace(' ', '+', $b['font_family']);
 
         $interceptScript = <<<'JS'

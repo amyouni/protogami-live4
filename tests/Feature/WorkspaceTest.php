@@ -141,7 +141,9 @@ it('toggles panel visibility', function () {
         ->call('togglePanel', 'sections')
         ->assertSet('showSections', false)
         ->call('togglePanel', 'branding')
-        ->assertSet('showBranding', false);
+        ->assertSet('showBranding', false)
+        ->call('togglePanel', 'theme')
+        ->assertSet('showTheme', false);
 });
 
 it('sets preview width', function () {
@@ -153,26 +155,40 @@ it('sets preview width', function () {
         ->assertSet('previewWidth', 'laptop');
 });
 
-it('switches branding tab between light and dark', function () {
+it('loads a light theme preset into branding', function () {
     Livewire::test('pages::proto.workspace')
-        ->assertSet('brandingTab', 'light')
-        ->call('setBrandingTab', 'dark')
-        ->assertSet('brandingTab', 'dark')
-        ->call('setBrandingTab', 'light')
-        ->assertSet('brandingTab', 'light');
+        ->set('lightThemePreset', 'ocean')
+        ->assertSet('branding.primary_color', '#0ea5e9')
+        ->assertSet('currentBrandingPreset', 'ocean');
 });
 
-it('switches preview theme and uses dark branding in preview', function () {
+it('loads a dark theme preset into branding', function () {
+    Livewire::test('pages::proto.workspace')
+        ->set('darkThemePreset', 'ocean')
+        ->assertSet('branding.primary_color', '#0ea5e9')
+        ->assertSet('currentBrandingPreset', 'ocean');
+});
+
+it('switches preview theme and uses dark theme preset in preview', function () {
     $component = Livewire::test('pages::proto.workspace')
-        ->set('darkBranding.background_color', '#111111')
+        ->set('darkThemePreset', 'ocean')
         ->call('setPreviewTheme', 'dark');
 
     $html = $component->get('previewHtml');
 
-    expect($html)->toContain('#111111');
+    expect($html)->toContain('#0ea5e9');
 });
 
-it('uses light branding in preview by default', function () {
+it('uses light theme preset in preview when set', function () {
+    $component = Livewire::test('pages::proto.workspace')
+        ->set('lightThemePreset', 'ocean');
+
+    $html = $component->get('previewHtml');
+
+    expect($html)->toContain('#0ea5e9');
+});
+
+it('uses inline branding in preview when no theme preset is set', function () {
     $component = Livewire::test('pages::proto.workspace')
         ->set('branding.background_color', '#abcdef');
 
