@@ -196,26 +196,91 @@
         <!-- Center: Page tabs + Preview Canvas -->
         <main class="flex flex-1 flex-col overflow-hidden">
             @if ($this->selectedPage)
-                <!-- Page tabs -->
-                <div class="flex items-center gap-1 border-b border-zinc-200 bg-zinc-100 px-2 py-1.5 dark:border-zinc-700 dark:bg-zinc-900">
-                    @foreach ($this->pageTree as $node)
-                        <button
-                            type="button"
-                            wire:key="tab-{{ $node['id'] }}"
-                            wire:click="selectPage('{{ $node['id'] }}')"
-                            @class([
-                                'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-                                'bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-100' => $selectedPageId === $node['id'],
-                                'text-zinc-500 hover:bg-white/60 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800/60' => $selectedPageId !== $node['id'],
-                            ])
-                        >
-                            {{ $node['name'] }}
-                        </button>
-                    @endforeach
+                <!-- Page tabs + Viewport controls -->
+                <div class="flex items-center justify-between gap-2 border-b border-zinc-200 bg-zinc-100 px-2 py-1.5 dark:border-zinc-700 dark:bg-zinc-900">
+                    <div class="flex items-center gap-1 overflow-x-auto">
+                        @foreach ($this->pageTree as $node)
+                            <button
+                                type="button"
+                                wire:key="tab-{{ $node['id'] }}"
+                                wire:click="selectPage('{{ $node['id'] }}')"
+                                @class([
+                                    'rounded-md px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap',
+                                    'bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-100' => $selectedPageId === $node['id'],
+                                    'text-zinc-500 hover:bg-white/60 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800/60' => $selectedPageId !== $node['id'],
+                                ])
+                            >
+                                {{ $node['name'] }}
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <!-- Viewport width buttons + Preview theme toggle -->
+                    <div class="flex items-center gap-2">
+                        <!-- Preview theme toggle -->
+                        <div class="flex items-center gap-0.5 rounded-md bg-zinc-200 p-0.5 dark:bg-zinc-800">
+                            <button
+                                type="button"
+                                wire:click="setPreviewTheme('light')"
+                                title="{{ __('Light preview') }}"
+                                @class([
+                                    'rounded px-2 py-1 text-xs font-medium transition-colors',
+                                    'bg-white text-zinc-900 shadow-sm dark:bg-zinc-600 dark:text-white' => $previewTheme === 'light',
+                                    'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400' => $previewTheme !== 'light',
+                                ])
+                            >
+                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                            </button>
+                            <button
+                                type="button"
+                                wire:click="setPreviewTheme('dark')"
+                                title="{{ __('Dark preview') }}"
+                                @class([
+                                    'rounded px-2 py-1 text-xs font-medium transition-colors',
+                                    'bg-white text-zinc-900 shadow-sm dark:bg-zinc-600 dark:text-white' => $previewTheme === 'dark',
+                                    'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400' => $previewTheme !== 'dark',
+                                ])
+                            >
+                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                            </button>
+                        </div>
+
+                        <!-- Viewport width buttons -->
+                        <div class="flex items-center gap-0.5 rounded-md bg-zinc-200 p-0.5 dark:bg-zinc-800">
+                        @php
+                            $widths = [
+                                'mobile' => ['label' => 'M', 'title' => __('Mobile (375px)')],
+                                'laptop' => ['label' => 'L', 'title' => __('Laptop (768px)')],
+                                'desktop' => ['label' => 'D', 'title' => __('Desktop (full)')],
+                            ];
+                        @endphp
+                        @foreach ($widths as $key => $meta)
+                            <button
+                                type="button"
+                                wire:click="setPreviewWidth('{{ $key }}')"
+                                title="{{ $meta['title'] }}"
+                                @class([
+                                    'rounded px-2 py-1 text-xs font-medium transition-colors',
+                                    'bg-white text-zinc-900 shadow-sm dark:bg-zinc-600 dark:text-white' => $previewWidth === $key,
+                                    'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400' => $previewWidth !== $key,
+                                ])
+                            >
+                                {{ $meta['label'] }}
+                            </button>
+                        @endforeach
+                    </div>
+                    </div>
                 </div>
 
                 <!-- Preview canvas -->
                 <div class="flex-1 bg-zinc-200 p-4 dark:bg-zinc-950">
+                    @php
+                        $previewMaxWidth = match($previewWidth) {
+                            'mobile' => '375px',
+                            'laptop' => '768px',
+                            default => '100%',
+                        };
+                    @endphp
                     <iframe
                         x-data="{ scrollPos: 0 }"
                         x-on:load="
@@ -224,7 +289,8 @@
                             $el.contentWindow.addEventListener('scroll', () => scrollPos = $el.contentWindow.scrollY);
                         "
                         srcdoc="{{ $this->previewHtml }}"
-                        class="mx-auto h-full w-full max-w-5xl rounded-lg border border-zinc-300 bg-white shadow-lg dark:border-zinc-700"
+                        style="max-width: {{ $previewMaxWidth }}"
+                        class="mx-auto h-full w-full rounded-lg border border-zinc-300 bg-white shadow-lg transition-all dark:border-zinc-700"
                         title="{{ __('Page preview') }}"
                     ></iframe>
                 </div>
@@ -244,7 +310,43 @@
                 </div>
 
                 <div class="flex-1 space-y-4 overflow-y-auto p-3">
-                    <flux:select wire:model.live="currentBrandingPreset" placeholder="{{ __('Branding preset...') }}" size="sm">
+                    <!-- Light / Dark tabs -->
+                    <div class="flex items-center gap-0.5 rounded-md bg-zinc-100 p-0.5 dark:bg-zinc-800">
+                        <button
+                            type="button"
+                            wire:click="setBrandingTab('light')"
+                            @class([
+                                'flex flex-1 items-center justify-center gap-1.5 rounded px-2 py-1.5 text-xs font-medium transition-colors',
+                                'bg-white text-zinc-900 shadow-sm dark:bg-zinc-600 dark:text-white' => $brandingTab === 'light',
+                                'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400' => $brandingTab !== 'light',
+                            ])
+                        >
+                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                            {{ __('Light') }}
+                        </button>
+                        <button
+                            type="button"
+                            wire:click="setBrandingTab('dark')"
+                            @class([
+                                'flex flex-1 items-center justify-center gap-1.5 rounded px-2 py-1.5 text-xs font-medium transition-colors',
+                                'bg-white text-zinc-900 shadow-sm dark:bg-zinc-600 dark:text-white' => $brandingTab === 'dark',
+                                'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400' => $brandingTab !== 'dark',
+                            ])
+                        >
+                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                            {{ __('Dark') }}
+                        </button>
+                    </div>
+
+                    @php
+                        $activeBranding = $brandingTab === 'dark' ? $darkBranding : $branding;
+                        $activePreset = $brandingTab === 'dark' ? $currentDarkBrandingPreset : $currentBrandingPreset;
+                        $presetModel = $brandingTab === 'dark' ? 'currentDarkBrandingPreset' : 'currentBrandingPreset';
+                        $brandingModel = $brandingTab === 'dark' ? 'darkBranding' : 'branding';
+                    @endphp
+
+                    <flux:select wire:model.live="{{ $presetModel }}" placeholder="{{ __('Branding preset...') }}" size="sm">
+                        <flux:select.option value="">{{ __('Choose preset...') }}</flux:select.option>
                         @foreach ($this->brandingPresets as $preset)
                             <flux:select.option value="{{ $preset['filename'] }}">{{ $preset['name'] }}</flux:select.option>
                         @endforeach
@@ -256,13 +358,38 @@
                         </flux:modal.trigger>
                     @endauth
 
-                    <flux:input type="color" label="{{ __('Primary') }}" wire:model.live="branding.primary_color" size="sm" />
-                    <flux:input type="color" label="{{ __('Secondary') }}" wire:model.live="branding.secondary_color" size="sm" />
-                    <flux:input type="color" label="{{ __('Accent') }}" wire:model.live="branding.accent_color" size="sm" />
-                    <flux:input type="color" label="{{ __('Background') }}" wire:model.live="branding.background_color" size="sm" />
-                    <flux:input type="color" label="{{ __('Text') }}" wire:model.live="branding.text_color" size="sm" />
+                    <!-- Color swatches -->
+                    <div>
+                        <p class="mb-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ __('Colors') }}</p>
+                        <div class="flex flex-wrap gap-2">
+                            @php
+                                $colors = [
+                                    'primary_color' => __('Primary'),
+                                    'secondary_color' => __('Secondary'),
+                                    'accent_color' => __('Accent'),
+                                    'background_color' => __('Background'),
+                                    'text_color' => __('Text'),
+                                ];
+                            @endphp
+                            @foreach ($colors as $key => $label)
+                                <label class="flex cursor-pointer flex-col items-center gap-1">
+                                    <div
+                                        class="h-10 w-10 rounded-lg border-2 border-zinc-300 shadow-sm transition-transform hover:scale-105 dark:border-zinc-600"
+                                        style="background-color: {{ $activeBranding[$key] }}"
+                                    >
+                                        <input
+                                            type="color"
+                                            wire:model.live="{{ $brandingModel }}.{{ $key }}"
+                                            class="h-full w-full cursor-pointer opacity-0"
+                                        />
+                                    </div>
+                                    <span class="text-[10px] text-zinc-500 dark:text-zinc-400">{{ $label }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
 
-                    <flux:select label="{{ __('Font Family') }}" wire:model.live="branding.font_family" size="sm">
+                    <flux:select label="{{ __('Font Family') }}" wire:model.live="{{ $brandingModel }}.font_family" size="sm">
                         <flux:select.option value="Inter">Inter</flux:select.option>
                         <flux:select.option value="Roboto">Roboto</flux:select.option>
                         <flux:select.option value="Poppins">Poppins</flux:select.option>

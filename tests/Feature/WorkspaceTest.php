@@ -143,3 +143,40 @@ it('toggles panel visibility', function () {
         ->call('togglePanel', 'branding')
         ->assertSet('showBranding', false);
 });
+
+it('sets preview width', function () {
+    Livewire::test('pages::proto.workspace')
+        ->assertSet('previewWidth', 'desktop')
+        ->call('setPreviewWidth', 'mobile')
+        ->assertSet('previewWidth', 'mobile')
+        ->call('setPreviewWidth', 'laptop')
+        ->assertSet('previewWidth', 'laptop');
+});
+
+it('switches branding tab between light and dark', function () {
+    Livewire::test('pages::proto.workspace')
+        ->assertSet('brandingTab', 'light')
+        ->call('setBrandingTab', 'dark')
+        ->assertSet('brandingTab', 'dark')
+        ->call('setBrandingTab', 'light')
+        ->assertSet('brandingTab', 'light');
+});
+
+it('switches preview theme and uses dark branding in preview', function () {
+    $component = Livewire::test('pages::proto.workspace')
+        ->set('darkBranding.background_color', '#111111')
+        ->call('setPreviewTheme', 'dark');
+
+    $html = $component->get('previewHtml');
+
+    expect($html)->toContain('#111111');
+});
+
+it('uses light branding in preview by default', function () {
+    $component = Livewire::test('pages::proto.workspace')
+        ->set('branding.background_color', '#abcdef');
+
+    $html = $component->get('previewHtml');
+
+    expect($html)->toContain('#abcdef');
+});
