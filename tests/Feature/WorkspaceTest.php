@@ -155,16 +155,20 @@ it('sets preview width', function () {
         ->assertSet('previewWidth', 'laptop');
 });
 
-it('loads a light theme preset into branding', function () {
+it('selects a light theme preset without changing branding', function () {
     Livewire::test('pages::proto.workspace')
+        ->set('branding.primary_color', '#ff0000')
         ->set('lightThemePreset', 'ocean')
-        ->assertSet('branding.primary_color', '#0ea5e9');
+        ->assertSet('branding.primary_color', '#ff0000')
+        ->assertSet('lightThemePreset', 'ocean');
 });
 
-it('loads a dark theme preset into branding', function () {
+it('selects a dark theme preset without changing branding', function () {
     Livewire::test('pages::proto.workspace')
+        ->set('branding.primary_color', '#ff0000')
         ->set('darkThemePreset', 'ocean')
-        ->assertSet('branding.primary_color', '#0ea5e9');
+        ->assertSet('branding.primary_color', '#ff0000')
+        ->assertSet('darkThemePreset', 'ocean');
 });
 
 it('switches preview theme and uses dark theme preset in preview', function () {

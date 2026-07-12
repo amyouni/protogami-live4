@@ -397,6 +397,28 @@
                                         <flux:select.option value="{{ $preset['filename'] }}" :selected="$lightThemePreset === $preset['filename']">{{ $preset['name'] }}</flux:select.option>
                                     @endforeach
                                 </flux:select>
+                                @if (! empty($this->lightThemeColors))
+                                    @php
+                                        $themeColors = [
+                                            'primary_color' => __('Primary'),
+                                            'secondary_color' => __('Secondary'),
+                                            'accent_color' => __('Accent'),
+                                            'background_color' => __('Background'),
+                                            'text_color' => __('Text'),
+                                        ];
+                                    @endphp
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @foreach ($themeColors as $key => $label)
+                                            <div class="flex flex-col items-center gap-0.5">
+                                                <div
+                                                    class="h-7 w-7 rounded-md border border-zinc-300 dark:border-zinc-600"
+                                                    style="background-color: {{ $this->lightThemeColors[$key] ?? '#ccc' }}"
+                                                ></div>
+                                                <span class="text-[9px] text-zinc-400">{{ $label }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
 
                             <div class="h-px bg-zinc-200 dark:bg-zinc-700"></div>
@@ -413,6 +435,28 @@
                                         <flux:select.option value="{{ $preset['filename'] }}" :selected="$darkThemePreset === $preset['filename']">{{ $preset['name'] }}</flux:select.option>
                                     @endforeach
                                 </flux:select>
+                                @if (! empty($this->darkThemeColors))
+                                    @php
+                                        $themeColors = [
+                                            'primary_color' => __('Primary'),
+                                            'secondary_color' => __('Secondary'),
+                                            'accent_color' => __('Accent'),
+                                            'background_color' => __('Background'),
+                                            'text_color' => __('Text'),
+                                        ];
+                                    @endphp
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @foreach ($themeColors as $key => $label)
+                                            <div class="flex flex-col items-center gap-0.5">
+                                                <div
+                                                    class="h-7 w-7 rounded-md border border-zinc-300 dark:border-zinc-600"
+                                                    style="background-color: {{ $this->darkThemeColors[$key] ?? '#ccc' }}"
+                                                ></div>
+                                                <span class="text-[9px] text-zinc-400">{{ $label }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>

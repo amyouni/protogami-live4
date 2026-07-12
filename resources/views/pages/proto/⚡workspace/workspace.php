@@ -161,18 +161,7 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
             return;
         }
 
-        $data = app(BrandingService::class)->load($filename);
-
-        if (! $data) {
-            Flux::toast(variant: 'danger', text: __('Could not load branding preset.'));
-
-            return;
-        }
-
-        unset($data['name']);
-        $this->branding = array_merge($this->branding, $data);
-
-        Flux::toast(variant: 'success', text: __('Light theme preset applied.'));
+        Flux::toast(variant: 'success', text: __('Light theme preset selected.'));
     }
 
     public function updatedDarkThemePreset(string $filename): void
@@ -181,18 +170,7 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
             return;
         }
 
-        $data = app(BrandingService::class)->load($filename);
-
-        if (! $data) {
-            Flux::toast(variant: 'danger', text: __('Could not load branding preset.'));
-
-            return;
-        }
-
-        unset($data['name']);
-        $this->branding = array_merge($this->branding, $data);
-
-        Flux::toast(variant: 'success', text: __('Dark theme preset applied.'));
+        Flux::toast(variant: 'success', text: __('Dark theme preset selected.'));
     }
 
     public function saveBranding(): void
@@ -430,6 +408,32 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         $page = $this->findPage($this->selectedPageId);
 
         return $page ? $this->buildPageHtml($page) : '';
+    }
+
+    /** @return array<string, string> */
+    #[Computed]
+    public function lightThemeColors(): array
+    {
+        if ($this->lightThemePreset === '') {
+            return [];
+        }
+
+        $data = app(BrandingService::class)->load($this->lightThemePreset);
+
+        return $data ?? [];
+    }
+
+    /** @return array<string, string> */
+    #[Computed]
+    public function darkThemeColors(): array
+    {
+        if ($this->darkThemePreset === '') {
+            return [];
+        }
+
+        $data = app(BrandingService::class)->load($this->darkThemePreset);
+
+        return $data ?? [];
     }
 
     /** @return array<string, mixed>|null */
