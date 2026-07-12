@@ -1,11 +1,13 @@
 <?php
 
+use App\Services\BrandingService;
 use App\Services\SnippetService;
 use App\Services\TemplateService;
 use Flux\Flux;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -37,6 +39,10 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
     public ?string $deletingPageId = null;
 
     public string $saveFilename = '';
+
+    public string $currentBrandingPreset = '';
+
+    public string $saveBrandingName = '';
 
     public function mount(): void
     {
@@ -82,6 +88,50 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
     public function selectPage(string $id): void
     {
         $this->selectedPageId = $id;
+    }
+
+    #[On('select-page-from-preview')]
+    public function selectPageFromPreview(string $id): void
+    {
+        $this->selectPage($id);
+    }
+
+    public function updatedCurrentBrandingPreset(string $filename): void
+    {
+        if ($filename === '') {
+            return;
+        }
+
+        $data = app(BrandingService::class)->load($filename);
+
+        if (! $data) {
+            Flux::toast(variant: 'danger', text: __('Could not load branding preset.'));
+
+            return;
+        }
+
+        unset($data['name']);
+        $this->branding = array_merge($this->branding, $data);
+
+        Flux::toast(variant: 'success', text: __('Branding preset applied.'));
+    }
+
+    public function saveBranding(): void
+    {
+        abort_unless(auth()->check(), 403);
+
+        $this->validate(['saveBrandingName' => 'required|string|max:60']);
+
+        $filename = app(BrandingService::class)->save($this->saveBrandingName, array_merge(
+            ['name' => $this->saveBrandingName],
+            $this->branding
+        ));
+
+        $this->currentBrandingPreset = $filename;
+        $this->saveBrandingName = '';
+
+        Flux::modal('saveBranding')->close();
+        Flux::toast(variant: 'success', text: __('Branding preset saved.'));
     }
 
     public function addPage(): void
@@ -265,6 +315,13 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         return app(TemplateService::class)->list();
     }
 
+    /** @return list<array<string, mixed>> */
+    #[Computed]
+    public function brandingPresets(): array
+    {
+        return app(BrandingService::class)->list();
+    }
+
     /** @return array<string, array<string, string>> */
     #[Computed]
     public function presets(): array
@@ -329,17 +386,52 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         return $ids;
     }
 
+    /** @return list<array<string, mixed>> */
+    protected function navItems(): array
+    {
+        return collect($this->pages)
+            ->filter(fn (array $p) => $p['parent_id'] === null)
+            ->sortBy('order')
+            ->map(fn (array $p) => [
+                'name' => $p['name'],
+                'id' => $p['id'],
+                'children' => collect($this->pages)
+                    ->filter(fn (array $c) => $c['parent_id'] === $p['id'])
+                    ->sortBy('order')
+                    ->map(fn (array $c) => ['name' => $c['name'], 'id' => $c['id']])
+                    ->values()
+                    ->all(),
+            ])
+            ->values()
+            ->all();
+    }
+
     /** @param array<string, mixed> $page */
     protected function buildPageHtml(array $page): string
     {
         $snippets = app(SnippetService::class);
+        $navItems = $this->navItems();
 
         $body = collect($page['sections'])
-            ->map(fn (array $s) => $snippets->load($s['type'], $s['preset']) ?? '')
+            ->map(fn (array $s) => $snippets->render($s['type'], $s['preset'], ['navItems' => $navItems]) ?? '')
             ->implode("\n");
 
         $b = $this->branding;
         $fontQuery = Str::replace(' ', '+', $b['font_family']);
+
+        $interceptScript = <<<'JS'
+<script>
+document.addEventListener('click', function(e) {
+    var link = e.target.closest('a');
+    if (!link) return;
+    e.preventDefault();
+    var pageId = link.getAttribute('data-page');
+    if (pageId && parent.Livewire) {
+        parent.Livewire.dispatch('select-page-from-preview', { id: pageId });
+    }
+});
+</script>
+JS;
 
         return <<<HTML
 <!DOCTYPE html>
@@ -363,6 +455,7 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 </head>
 <body>
 {$body}
+{$interceptScript}
 </body>
 </html>
 HTML;

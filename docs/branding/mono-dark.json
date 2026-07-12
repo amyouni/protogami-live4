@@ -1,0 +1,9 @@
+{
+    "name": "Mono Dark",
+    "primary_color": "#fafafa",
+    "secondary_color": "#a1a1aa",
+    "accent_color": "#22d3ee",
+    "background_color": "#18181b",
+    "text_color": "#e4e4e7",
+    "font_family": "Inter"
+}

@@ -182,6 +182,18 @@
         <aside class="w-64 shrink-0 space-y-4 overflow-y-auto border-s border-zinc-200 p-4 dark:border-zinc-700">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{{ __('Branding') }}</h2>
 
+            <flux:select wire:model.live="currentBrandingPreset" placeholder="{{ __('Branding preset...') }}">
+                @foreach ($this->brandingPresets as $preset)
+                    <flux:select.option value="{{ $preset['filename'] }}">{{ $preset['name'] }}</flux:select.option>
+                @endforeach
+            </flux:select>
+
+            @auth
+                <flux:modal.trigger name="saveBranding">
+                    <flux:button variant="ghost" size="sm" icon="bookmark" class="w-full">{{ __('Save Branding') }}</flux:button>
+                </flux:modal.trigger>
+            @endauth
+
             <flux:input type="color" label="{{ __('Primary') }}" wire:model.live="branding.primary_color" />
             <flux:input type="color" label="{{ __('Secondary') }}" wire:model.live="branding.secondary_color" />
             <flux:input type="color" label="{{ __('Accent') }}" wire:model.live="branding.accent_color" />
@@ -253,6 +265,25 @@
                         <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
                     </flux:modal.close>
                     <flux:button variant="primary" wire:click="saveTemplate">{{ __('Save') }}</flux:button>
+                </div>
+            </div>
+        </flux:modal>
+    @endauth
+
+    <!-- Save Branding Modal -->
+    @auth
+        <flux:modal name="saveBranding" class="min-w-[22rem]">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">{{ __('Save Branding Preset') }}</flux:heading>
+                    <flux:subheading>{{ __('Save the current colors and font as a reusable preset.') }}</flux:subheading>
+                </div>
+                <flux:input label="{{ __('Preset name') }}" wire:model="saveBrandingName" placeholder="{{ __('e.g. Ocean Blue') }}" />
+                <div class="flex justify-end gap-2">
+                    <flux:modal.close>
+                        <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    </flux:modal.close>
+                    <flux:button variant="primary" wire:click="saveBranding">{{ __('Save') }}</flux:button>
                 </div>
             </div>
         </flux:modal>

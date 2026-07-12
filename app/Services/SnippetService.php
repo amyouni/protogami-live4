@@ -65,4 +65,22 @@ class SnippetService
 
         return File::get($fullPath);
     }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function render(string $type, string $preset, array $data = []): ?string
+    {
+        if (! isset(self::PRESETS[$type][$preset])) {
+            return null;
+        }
+
+        $fullPath = $this->path().'/'.$type.'_'.$preset.'.blade.php';
+
+        if (! File::exists($fullPath)) {
+            return null;
+        }
+
+        return view()->file($fullPath, $data)->render();
+    }
 }

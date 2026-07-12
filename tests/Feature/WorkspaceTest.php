@@ -83,3 +83,50 @@ it('exports the selected page as a download', function () {
         ->call('export')
         ->assertFileDownloaded('home.html');
 });
+
+it('switches page via select-page-from-preview event', function () {
+    Livewire::test('pages::proto.workspace')
+        ->set('currentTemplate', 'football-site')
+        ->dispatch('select-page-from-preview', id: 'teams')
+        ->assertSet('selectedPageId', 'teams');
+});
+
+it('loads a branding preset', function () {
+    Livewire::test('pages::proto.workspace')
+        ->set('currentBrandingPreset', 'ocean')
+        ->assertSet('branding.primary_color', '#0ea5e9')
+        ->assertSet('branding.font_family', 'Inter');
+});
+
+it('forbids guests from saving branding presets', function () {
+    Livewire::test('pages::proto.workspace')
+        ->set('saveBrandingName', 'test-preset')
+        ->call('saveBranding')
+        ->assertForbidden();
+});
+
+it('allows authenticated users to save branding presets', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
+        ->set('saveBrandingName', 'test-save-preset')
+        ->call('saveBranding')
+        ->assertHasNoErrors();
+
+    expect(file_exists(base_path('docs/branding/test-save-preset.json')))->toBeTrue();
+
+    unlink(base_path('docs/branding/test-save-preset.json'));
+});
+
+it('generates preview HTML with dynamic nav and link interception', function () {
+    $component = Livewire::test('pages::proto.workspace')
+        ->set('newPageName', 'About')
+        ->call('addPage');
+
+    $html = $component->get('previewHtml');
+
+    expect($html)->toContain('data-page="home"')
+        ->and($html)->toContain('data-page="about"')
+        ->and($html)->toContain('select-page-from-preview');
+});
