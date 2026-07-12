@@ -23,6 +23,12 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         'font_family' => 'Inter',
     ];
 
+    /** @var array<string, string> */
+    public array $lightThemeBranding = [];
+
+    /** @var array<string, string> */
+    public array $darkThemeBranding = [];
+
     /** @var list<array<string, mixed>> */
     public array $pages = [];
 
@@ -44,17 +50,11 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
     public string $saveBrandingName = '';
 
-    public string $lightThemePreset = '';
-
-    public string $darkThemePreset = '';
-
     public bool $showSitemap = true;
 
     public bool $showSections = true;
 
     public bool $showBranding = true;
-
-    public bool $showTheme = true;
 
     public string $previewWidth = 'desktop';
 
@@ -66,7 +66,6 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
             'sitemap' => $this->showSitemap = ! $this->showSitemap,
             'sections' => $this->showSections = ! $this->showSections,
             'branding' => $this->showBranding = ! $this->showBranding,
-            'theme' => $this->showTheme = ! $this->showTheme,
             default => null,
         };
     }
@@ -115,8 +114,8 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
         $this->templateName = $data['name'] ?? $filename;
         $this->branding = array_merge($this->branding, $data['branding'] ?? []);
-        $this->lightThemePreset = $data['light_theme_preset'] ?? '';
-        $this->darkThemePreset = $data['dark_theme_preset'] ?? '';
+        $this->lightThemeBranding = $data['light_theme_branding'] ?? [];
+        $this->darkThemeBranding = $data['dark_theme_branding'] ?? [];
         $this->pages = $data['pages'];
         $this->selectedPageId = $this->pages[0]['id'] ?? null;
         $this->saveFilename = $filename;
@@ -155,22 +154,18 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         Flux::toast(variant: 'success', text: __('Branding preset applied.'));
     }
 
-    public function updatedLightThemePreset(string $filename): void
+    public function saveLightTheme(): void
     {
-        if ($filename === '') {
-            return;
-        }
+        $this->lightThemeBranding = $this->branding;
 
-        Flux::toast(variant: 'success', text: __('Light theme preset selected.'));
+        Flux::toast(variant: 'success', text: __('Light theme saved.'));
     }
 
-    public function updatedDarkThemePreset(string $filename): void
+    public function saveDarkTheme(): void
     {
-        if ($filename === '') {
-            return;
-        }
+        $this->darkThemeBranding = $this->branding;
 
-        Flux::toast(variant: 'success', text: __('Dark theme preset selected.'));
+        Flux::toast(variant: 'success', text: __('Dark theme saved.'));
     }
 
     public function saveBranding(): void
@@ -339,8 +334,8 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         $filename = app(TemplateService::class)->save($this->saveFilename, [
             'name' => $this->templateName,
             'branding' => $this->branding,
-            'light_theme_preset' => $this->lightThemePreset,
-            'dark_theme_preset' => $this->darkThemePreset,
+            'light_theme_branding' => $this->lightThemeBranding,
+            'dark_theme_branding' => $this->darkThemeBranding,
             'pages' => $this->pages,
         ]);
 
@@ -410,32 +405,6 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         return $page ? $this->buildPageHtml($page) : '';
     }
 
-    /** @return array<string, string> */
-    #[Computed]
-    public function lightThemeColors(): array
-    {
-        if ($this->lightThemePreset === '') {
-            return [];
-        }
-
-        $data = app(BrandingService::class)->load($this->lightThemePreset);
-
-        return $data ?? [];
-    }
-
-    /** @return array<string, string> */
-    #[Computed]
-    public function darkThemeColors(): array
-    {
-        if ($this->darkThemePreset === '') {
-            return [];
-        }
-
-        $data = app(BrandingService::class)->load($this->darkThemePreset);
-
-        return $data ?? [];
-    }
-
     /** @return array<string, mixed>|null */
     protected function findPage(?string $id): ?array
     {
@@ -501,18 +470,9 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
             ->map(fn (array $s) => $snippets->render($s['type'], $s['preset'], ['navItems' => $navItems]) ?? '')
             ->implode("\n");
 
-        $presetFilename = $this->previewTheme === 'dark'
-            ? $this->darkThemePreset
-            : $this->lightThemePreset;
-
-        $b = $this->branding;
-        if ($presetFilename !== '') {
-            $loaded = app(BrandingService::class)->load($presetFilename);
-            if ($loaded) {
-                unset($loaded['name']);
-                $b = array_merge($this->branding, $loaded);
-            }
-        }
+        $b = $this->previewTheme === 'dark'
+            ? ($this->darkThemeBranding !== [] ? $this->darkThemeBranding : $this->branding)
+            : ($this->lightThemeBranding !== [] ? $this->lightThemeBranding : $this->branding);
         $fontQuery = Str::replace(' ', '+', $b['font_family']);
 
         $interceptScript = <<<'JS'

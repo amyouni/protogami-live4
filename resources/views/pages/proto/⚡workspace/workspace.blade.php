@@ -84,15 +84,6 @@
                     :class="$showBranding ? 'text-blue-600 dark:text-blue-400' : ''"
                 />
             </flux:tooltip>
-            <flux:tooltip content="{{ __('Toggle Theme') }}">
-                <flux:button
-                    variant="ghost"
-                    size="sm"
-                    icon="sun"
-                    wire:click="togglePanel('theme')"
-                    :class="$showTheme ? 'text-blue-600 dark:text-blue-400' : ''"
-                />
-            </flux:tooltip>
         </div>
     </header>
 
@@ -310,158 +301,79 @@
             @endif
         </main>
 
-        <!-- Right: Branding + Theme panels -->
-        @if ($showBranding || $showTheme)
-            <div class="flex w-60 shrink-0 flex-col border-s border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-                <!-- Branding Panel -->
-                @if ($showBranding)
-                    <div class="flex flex-col {{ $showTheme ? 'h-1/2' : 'flex-1' }} overflow-hidden">
-                        <div class="flex items-center justify-between border-b border-zinc-200 px-3 py-2.5 dark:border-zinc-700">
-                            <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{{ __('Branding') }}</h2>
-                            <flux:button variant="ghost" size="sm" icon="chevron-right" class="h-6 w-6 p-0" wire:click="togglePanel('branding')" />
-                        </div>
+        <!-- Right: Branding panel -->
+        @if ($showBranding)
+            <aside class="flex w-60 shrink-0 flex-col border-s border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+                <div class="flex items-center justify-between border-b border-zinc-200 px-3 py-2.5 dark:border-zinc-700">
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{{ __('Branding') }}</h2>
+                    <flux:button variant="ghost" size="sm" icon="chevron-right" class="h-6 w-6 p-0" wire:click="togglePanel('branding')" />
+                </div>
 
-                        <div class="flex-1 space-y-4 overflow-y-auto p-3">
-                            <flux:select wire:model.live="currentBrandingPreset" placeholder="{{ __('Choose preset...') }}" size="sm">
-                                <flux:select.option value="" :selected="$currentBrandingPreset === ''">{{ __('Choose preset...') }}</flux:select.option>
-                                @foreach ($this->brandingPresets as $preset)
-                                    <flux:select.option value="{{ $preset['filename'] }}" :selected="$currentBrandingPreset === $preset['filename']">{{ $preset['name'] }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
+                <div class="flex-1 space-y-4 overflow-y-auto p-3">
+                    <flux:select wire:model.live="currentBrandingPreset" placeholder="{{ __('Choose preset...') }}" size="sm">
+                        <flux:select.option value="" :selected="$currentBrandingPreset === ''">{{ __('Choose preset...') }}</flux:select.option>
+                        @foreach ($this->brandingPresets as $preset)
+                            <flux:select.option value="{{ $preset['filename'] }}" :selected="$currentBrandingPreset === $preset['filename']">{{ $preset['name'] }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
 
-                            @auth
-                                <flux:modal.trigger name="saveBranding">
-                                    <flux:button variant="ghost" size="sm" icon="bookmark" class="w-full">{{ __('Save Preset') }}</flux:button>
-                                </flux:modal.trigger>
-                            @endauth
+                    <!-- Save Light / Save Dark buttons -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <flux:button variant="ghost" size="sm" wire:click="saveLightTheme" class="w-full">
+                            <flux:icon.sun class="h-4 w-4" />
+                            {{ __('Save Light') }}
+                        </flux:button>
+                        <flux:button variant="ghost" size="sm" wire:click="saveDarkTheme" class="w-full">
+                            <flux:icon.moon class="h-4 w-4" />
+                            {{ __('Save Dark') }}
+                        </flux:button>
+                    </div>
 
-                            <!-- Color swatches -->
-                            <div>
-                                <p class="mb-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ __('Colors') }}</p>
-                                <div class="flex flex-wrap gap-2">
-                                    @php
-                                        $colors = [
-                                            'primary_color' => __('Primary'),
-                                            'secondary_color' => __('Secondary'),
-                                            'accent_color' => __('Accent'),
-                                            'background_color' => __('Background'),
-                                            'text_color' => __('Text'),
-                                        ];
-                                    @endphp
-                                    @foreach ($colors as $key => $label)
-                                        <label class="flex cursor-pointer flex-col items-center gap-1">
-                                            <div
-                                                class="h-10 w-10 rounded-lg border-2 border-zinc-300 shadow-sm transition-transform hover:scale-105 dark:border-zinc-600"
-                                                style="background-color: {{ $branding[$key] }}"
-                                            >
-                                                <input
-                                                    type="color"
-                                                    wire:model.live="branding.{{ $key }}"
-                                                    class="h-full w-full cursor-pointer opacity-0"
-                                                />
-                                            </div>
-                                            <span class="text-[10px] text-zinc-500 dark:text-zinc-400">{{ $label }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
-                            </div>
+                    @auth
+                        <flux:modal.trigger name="saveBranding">
+                            <flux:button variant="ghost" size="sm" icon="bookmark" class="w-full">{{ __('Save Preset') }}</flux:button>
+                        </flux:modal.trigger>
+                    @endauth
 
-                            <flux:select label="{{ __('Font Family') }}" wire:model.live="branding.font_family" size="sm">
-                                <flux:select.option value="Inter">Inter</flux:select.option>
-                                <flux:select.option value="Roboto">Roboto</flux:select.option>
-                                <flux:select.option value="Poppins">Poppins</flux:select.option>
-                                <flux:select.option value="Merriweather">Merriweather</flux:select.option>
-                            </flux:select>
+                    <!-- Color swatches -->
+                    <div>
+                        <p class="mb-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ __('Colors') }}</p>
+                        <div class="flex flex-wrap gap-2">
+                            @php
+                                $colors = [
+                                    'primary_color' => __('Primary'),
+                                    'secondary_color' => __('Secondary'),
+                                    'accent_color' => __('Accent'),
+                                    'background_color' => __('Background'),
+                                    'text_color' => __('Text'),
+                                ];
+                            @endphp
+                            @foreach ($colors as $key => $label)
+                                <label class="flex cursor-pointer flex-col items-center gap-1">
+                                    <div
+                                        class="h-10 w-10 rounded-lg border-2 border-zinc-300 shadow-sm transition-transform hover:scale-105 dark:border-zinc-600"
+                                        style="background-color: {{ $branding[$key] }}"
+                                    >
+                                        <input
+                                            type="color"
+                                            wire:model.live="branding.{{ $key }}"
+                                            class="h-full w-full cursor-pointer opacity-0"
+                                        />
+                                    </div>
+                                    <span class="text-[10px] text-zinc-500 dark:text-zinc-400">{{ $label }}</span>
+                                </label>
+                            @endforeach
                         </div>
                     </div>
-                @endif
 
-                <!-- Theme Panel -->
-                @if ($showTheme)
-                    <div class="flex flex-col {{ $showBranding ? 'h-1/2' : 'flex-1' }} overflow-hidden">
-                        <div class="flex items-center justify-between border-b border-zinc-200 px-3 py-2.5 dark:border-zinc-700">
-                            <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{{ __('Theme') }}</h2>
-                            <flux:button variant="ghost" size="sm" icon="chevron-right" class="h-6 w-6 p-0" wire:click="togglePanel('theme')" />
-                        </div>
-
-                        <div class="flex-1 space-y-4 overflow-y-auto p-3">
-                            <!-- Light Theme -->
-                            <div class="space-y-2">
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="h-4 w-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                                    <span class="text-xs font-medium text-zinc-600 dark:text-zinc-300">{{ __('Light Theme') }}</span>
-                                </div>
-                                <flux:select wire:model.live="lightThemePreset" placeholder="{{ __('Select preset...') }}" size="sm">
-                                    <flux:select.option value="" :selected="$lightThemePreset === ''">{{ __('None') }}</flux:select.option>
-                                    @foreach ($this->brandingPresets as $preset)
-                                        <flux:select.option value="{{ $preset['filename'] }}" :selected="$lightThemePreset === $preset['filename']">{{ $preset['name'] }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                @if (! empty($this->lightThemeColors))
-                                    @php
-                                        $themeColors = [
-                                            'primary_color' => __('Primary'),
-                                            'secondary_color' => __('Secondary'),
-                                            'accent_color' => __('Accent'),
-                                            'background_color' => __('Background'),
-                                            'text_color' => __('Text'),
-                                        ];
-                                    @endphp
-                                    <div class="flex flex-wrap gap-1.5">
-                                        @foreach ($themeColors as $key => $label)
-                                            <div class="flex flex-col items-center gap-0.5">
-                                                <div
-                                                    class="h-7 w-7 rounded-md border border-zinc-300 dark:border-zinc-600"
-                                                    style="background-color: {{ $this->lightThemeColors[$key] ?? '#ccc' }}"
-                                                ></div>
-                                                <span class="text-[9px] text-zinc-400">{{ $label }}</span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @endif
-                            </div>
-
-                            <div class="h-px bg-zinc-200 dark:bg-zinc-700"></div>
-
-                            <!-- Dark Theme -->
-                            <div class="space-y-2">
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="h-4 w-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-                                    <span class="text-xs font-medium text-zinc-600 dark:text-zinc-300">{{ __('Dark Theme') }}</span>
-                                </div>
-                                <flux:select wire:model.live="darkThemePreset" placeholder="{{ __('Select preset...') }}" size="sm">
-                                    <flux:select.option value="" :selected="$darkThemePreset === ''">{{ __('None') }}</flux:select.option>
-                                    @foreach ($this->brandingPresets as $preset)
-                                        <flux:select.option value="{{ $preset['filename'] }}" :selected="$darkThemePreset === $preset['filename']">{{ $preset['name'] }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                @if (! empty($this->darkThemeColors))
-                                    @php
-                                        $themeColors = [
-                                            'primary_color' => __('Primary'),
-                                            'secondary_color' => __('Secondary'),
-                                            'accent_color' => __('Accent'),
-                                            'background_color' => __('Background'),
-                                            'text_color' => __('Text'),
-                                        ];
-                                    @endphp
-                                    <div class="flex flex-wrap gap-1.5">
-                                        @foreach ($themeColors as $key => $label)
-                                            <div class="flex flex-col items-center gap-0.5">
-                                                <div
-                                                    class="h-7 w-7 rounded-md border border-zinc-300 dark:border-zinc-600"
-                                                    style="background-color: {{ $this->darkThemeColors[$key] ?? '#ccc' }}"
-                                                ></div>
-                                                <span class="text-[9px] text-zinc-400">{{ $label }}</span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                @endif
-            </div>
+                    <flux:select label="{{ __('Font Family') }}" wire:model.live="branding.font_family" size="sm">
+                        <flux:select.option value="Inter">Inter</flux:select.option>
+                        <flux:select.option value="Roboto">Roboto</flux:select.option>
+                        <flux:select.option value="Poppins">Poppins</flux:select.option>
+                        <flux:select.option value="Merriweather">Merriweather</flux:select.option>
+                    </flux:select>
+                </div>
+            </aside>
         @endif
     </div>
 
