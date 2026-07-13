@@ -27,7 +27,7 @@ class TemplateService
                 $data = json_decode($file->getContents(), true);
 
                 return [
-                    'name' => $data['name'] ?? $file->getFilenameWithoutExtension(),
+                    'name' => (string) ($data['name'] ?? $file->getFilenameWithoutExtension()),
                     'filename' => $file->getFilenameWithoutExtension(),
                 ];
             })
@@ -65,10 +65,9 @@ class TemplateService
 
         File::ensureDirectoryExists($this->path());
 
-        File::put(
-            $this->path().'/'.$filename.'.json',
-            json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-        );
+        $contents = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        File::put($this->path().'/'.$filename.'.json', (string) $contents);
 
         return $filename;
     }
