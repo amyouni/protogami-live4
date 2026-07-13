@@ -62,6 +62,8 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
     public string $previewTheme = 'light';
 
+    public string $exportFormat = 'html';
+
     public function togglePanel(string $panel): void
     {
         match ($panel) {
@@ -366,18 +368,29 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
     public function export(): ?StreamedResponse
     {
-        $page = $this->findPage($this->selectedPageId);
-
-        if (! $page) {
+        if (empty($this->pages)) {
             return null;
         }
 
-        $html = $this->buildPageHtml($page);
-        $filename = Str::slug($page['name']).'.html';
+        $pages = $this->buildAllPagesHtml();
+        $zipPath = sys_get_temp_dir().'/'.Str::slug($this->templateName).'-'.time().'.zip';
 
-        return response()->streamDownload(function () use ($html): void {
-            echo $html;
-        }, $filename, ['Content-Type' => 'text/html']);
+        $zip = new \ZipArchive;
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            return null;
+        }
+
+        foreach ($pages as $filename => $html) {
+            $zip->addFromString($filename, $html);
+        }
+        $zip->close();
+
+        $zipName = Str::slug($this->templateName).'.zip';
+
+        return response()->streamDownload(function () use ($zipPath): void {
+            readfile($zipPath);
+            @unlink($zipPath);
+        }, $zipName, ['Content-Type' => 'application/zip']);
     }
 
     /** @return list<array<string, mixed>> */
@@ -490,7 +503,7 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
     }
 
     /** @param array<string, mixed> $page */
-    protected function buildPageHtml(array $page): string
+    protected function buildPageHtml(array $page, bool $forExport = false): string
     {
         $snippets = app(SnippetService::class);
         $navItems = $this->navItems();
@@ -502,7 +515,7 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         $b = $this->branding;
         $fontQuery = Str::replace(' ', '+', $b['font_family']);
 
-        $interceptScript = <<<'JS'
+        $interceptScript = $forExport ? '' : <<<'JS'
 <script>
 document.addEventListener('click', function(e) {
     var link = e.target.closest('a');
@@ -542,5 +555,19 @@ JS;
 </body>
 </html>
 HTML;
+    }
+
+    /** @return array<string, string> */
+    protected function buildAllPagesHtml(): array
+    {
+        $result = [];
+        $sorted = collect($this->pages)->sortBy('order')->values()->all();
+
+        foreach ($sorted as $index => $page) {
+            $filename = $index === 0 ? 'index.html' : Str::slug($page['name']).'.html';
+            $result[$filename] = $this->buildPageHtml($page, forExport: true);
+        }
+
+        return $result;
     }
 };

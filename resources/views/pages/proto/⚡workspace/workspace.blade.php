@@ -39,9 +39,11 @@
 
         <!-- Right: Actions + Panel toggles -->
         <div class="flex items-center gap-1.5">
-            <flux:button variant="ghost" size="sm" icon="arrow-down-tray" wire:click="export">
-                {{ __('Export') }}
-            </flux:button>
+            <flux:modal.trigger name="exportModal">
+                <flux:button variant="ghost" size="sm" icon="arrow-down-tray">
+                    {{ __('Export') }}
+                </flux:button>
+            </flux:modal.trigger>
             @auth
                 <flux:modal.trigger name="saveTemplate">
                     <flux:button variant="primary" size="sm" icon="bookmark">{{ __('Save') }}</flux:button>
@@ -455,6 +457,30 @@
             </div>
         </flux:modal>
     @endauth
+
+    <!-- Export Modal -->
+    <flux:modal name="exportModal" class="min-w-[22rem]">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('Export Site') }}</flux:heading>
+                <flux:subheading>{{ __('Choose a format and export all pages as a ZIP file.') }}</flux:subheading>
+            </div>
+            <flux:radio.group wire:model="exportFormat" label="{{ __('Format') }}">
+                <flux:radio value="html" label="{{ __('HTML (Standalone)') }}" description="{{ __('Static HTML files with Tailwind CDN') }}" />
+                <flux:radio value="livewire" label="{{ __('Laravel Livewire') }}" description="{{ __('Livewire components with Blade templates') }}" />
+                <flux:radio value="inertia-vue" label="{{ __('Laravel Inertia + Vue') }}" description="{{ __('Inertia.js with Vue 3 components') }}" />
+                <flux:radio value="inertia-react" label="{{ __('Laravel Inertia + React') }}" description="{{ __('Inertia.js with React components') }}" />
+            </flux:radio.group>
+            <div class="flex justify-end gap-2">
+                <flux:modal.close>
+                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                </flux:modal.close>
+                <flux:button variant="primary" wire:click="export" x-on:click="$flux.modal('exportModal').close()">
+                    {{ __('Export') }}
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
 
     <!-- Save Branding Modal -->
     @auth

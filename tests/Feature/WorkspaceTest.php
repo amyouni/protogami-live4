@@ -78,10 +78,29 @@ it('allows authenticated users to save templates', function () {
     unlink(base_path('docs/templates/test-save-template.json'));
 });
 
-it('exports the selected page as a download', function () {
+it('exports all pages as a ZIP download', function () {
     Livewire::test('pages::proto.workspace')
         ->call('export')
-        ->assertFileDownloaded('home.html');
+        ->assertFileDownloaded('untitled.zip');
+});
+
+it('shows the export modal with format options', function () {
+    Livewire::test('pages::proto.workspace')
+        ->assertSee(__('Export Site'))
+        ->assertSee(__('HTML (Standalone)'))
+        ->assertSee(__('Laravel Livewire'))
+        ->assertSee(__('Laravel Inertia + Vue'))
+        ->assertSee(__('Laravel Inertia + React'));
+});
+
+it('exports multiple pages as separate HTML files in ZIP', function () {
+    $zipPath = tempnam(sys_get_temp_dir(), 'test_zip_');
+
+    Livewire::test('pages::proto.workspace')
+        ->set('newPageName', 'About')
+        ->call('addPage')
+        ->call('export')
+        ->assertFileDownloaded('untitled.zip');
 });
 
 it('switches page via select-page-from-preview event', function () {
