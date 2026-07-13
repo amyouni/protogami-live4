@@ -45,7 +45,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: 11
 
       - name: Install Node Dependencies
         run: pnpm install --frozen-lockfile
