@@ -160,7 +160,6 @@
                                                         variant="ghost"
                                                         size="sm"
                                                         wire:click="openSectionSettings('{{ $section['id'] }}')"
-                                                        x-on:click="$flux.modal('sectionSettings').show()"
                                                         class="h-6 w-6 p-0"
                                                         icon="cog-6-tooth"
                                                     />
@@ -187,6 +186,29 @@
                     </div>
                 @endif
             </div>
+        @endif
+
+        <!-- Section Settings Slide-In Panel -->
+        @if ($this->editingSectionId && $this->editingSection)
+            <aside class="flex w-72 shrink-0 flex-col border-e border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+                <div class="flex items-center justify-between border-b border-zinc-200 px-3 py-2.5 dark:border-zinc-700">
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{{ ucfirst($this->editingSection['type']) }} {{ __('Settings') }}</h2>
+                    <flux:button variant="ghost" size="sm" icon="chevron-left" class="h-6 w-6 p-0" wire:click="closeSectionSettings" />
+                </div>
+                <div class="flex-1 overflow-y-auto p-3 space-y-4">
+                    <flux:select
+                        label="{{ __('Preset') }}"
+                        size="sm"
+                        wire:change="updateSectionPreset('{{ $this->editingSection['id'] }}', $event.target.value)"
+                    >
+                        @foreach ($this->presets[$this->editingSection['type']] ?? [] as $presetKey => $presetLabel)
+                            <flux:select.option value="{{ $presetKey }}" :selected="$this->editingSection['preset'] === $presetKey">
+                                {{ $presetLabel }}
+                            </flux:select.option>
+                        @endforeach
+                    </flux:select>
+                </div>
+            </aside>
         @endif
 
         <!-- Center: Page tabs + Preview Canvas -->
@@ -453,33 +475,4 @@
         </flux:modal>
     @endauth
 
-    <!-- Section Settings Modal -->
-    <flux:modal name="sectionSettings" class="min-w-[22rem]">
-        <div class="space-y-6">
-            @if ($this->editingSection)
-                <div>
-                    <flux:heading size="lg">{{ ucfirst($this->editingSection['type']) }} {{ __('Settings') }}</flux:heading>
-                    <flux:subheading>{{ __('Change the preset and settings for this section.') }}</flux:subheading>
-                </div>
-
-                <flux:select
-                    label="{{ __('Preset') }}"
-                    size="sm"
-                    wire:change="updateSectionPreset('{{ $this->editingSection['id'] }}', $event.target.value)"
-                >
-                    @foreach ($this->presets[$this->editingSection['type']] ?? [] as $presetKey => $presetLabel)
-                        <flux:select.option value="{{ $presetKey }}" :selected="$this->editingSection['preset'] === $presetKey">
-                            {{ $presetLabel }}
-                        </flux:select.option>
-                    @endforeach
-                </flux:select>
-            @endif
-
-            <div class="flex justify-end">
-                <flux:modal.close>
-                    <flux:button variant="primary" wire:click="closeSectionSettings">{{ __('Done') }}</flux:button>
-                </flux:modal.close>
-            </div>
-        </div>
-    </flux:modal>
 </div>
