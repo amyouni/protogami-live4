@@ -8,6 +8,22 @@
         "text_color": "#111827",
         "font_family": "Poppins"
     },
+    "light_theme_branding": {
+        "primary_color": "#8b5cf6",
+        "secondary_color": "#6d28d9",
+        "accent_color": "#f59e0b",
+        "background_color": "#faf5ff",
+        "text_color": "#3b0764",
+        "font_family": "Poppins"
+    },
+    "dark_theme_branding": {
+        "primary_color": "#a78bfa",
+        "secondary_color": "#7c3aed",
+        "accent_color": "#fbbf24",
+        "background_color": "#1e1b2e",
+        "text_color": "#e9d5ff",
+        "font_family": "Poppins"
+    },
     "pages": [
         {
             "id": "home",
