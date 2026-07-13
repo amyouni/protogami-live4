@@ -21,7 +21,7 @@ class BrandingService
             return [];
         }
 
-        return collect(File::files($this->path()))
+        return array_values(collect(File::files($this->path()))
             ->filter(fn ($file) => $file->getExtension() === 'json')
             ->map(function ($file) {
                 $data = json_decode($file->getContents(), true);
@@ -31,8 +31,7 @@ class BrandingService
                     'filename' => $file->getFilenameWithoutExtension(),
                 ];
             })
-            ->values()
-            ->all();
+            ->all());
     }
 
     /**
