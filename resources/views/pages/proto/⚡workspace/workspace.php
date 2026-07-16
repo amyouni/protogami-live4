@@ -34,8 +34,6 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
 
     public ?string $selectedPageId = null;
 
-    public string $currentTemplate = '';
-
     public string $templateName = 'Untitled';
 
     public string $newPageName = '';
@@ -90,30 +88,34 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
         }
     }
 
-    public function mount(): void
+    public function mount(?string $template = null): void
     {
-        $this->pages = [
-            [
-                'id' => 'home',
-                'name' => 'Home',
-                'parent_id' => null,
-                'order' => 0,
-                'sections' => [
-                    ['id' => Str::random(8), 'type' => 'navbar', 'preset' => 'items_right'],
-                    ['id' => Str::random(8), 'type' => 'content', 'preset' => 'hero'],
-                    ['id' => Str::random(8), 'type' => 'footer', 'preset' => 'simple'],
-                ],
-            ],
-        ];
-        $this->selectedPageId = 'home';
-    }
+        abort_unless(auth()->check(), 403);
 
-    public function updatedCurrentTemplate(string $filename): void
-    {
-        if ($filename === '') {
-            return;
+        if ($template) {
+            $this->loadTemplate($template);
         }
 
+        if ($this->pages === []) {
+            $this->pages = [
+                [
+                    'id' => 'home',
+                    'name' => 'Home',
+                    'parent_id' => null,
+                    'order' => 0,
+                    'sections' => [
+                        ['id' => Str::random(8), 'type' => 'navbar', 'preset' => 'items_right'],
+                        ['id' => Str::random(8), 'type' => 'content', 'preset' => 'hero'],
+                        ['id' => Str::random(8), 'type' => 'footer', 'preset' => 'simple'],
+                    ],
+                ],
+            ];
+            $this->selectedPageId = 'home';
+        }
+    }
+
+    protected function loadTemplate(string $filename): void
+    {
         $data = app(TemplateService::class)->load($filename);
 
         if (! $data) {
@@ -359,7 +361,6 @@ return new #[Layout('layouts.builder', ['title' => 'Workspace'])] class extends 
             'pages' => $this->pages,
         ]);
 
-        $this->currentTemplate = $filename;
         $this->saveFilename = $filename;
 
         Flux::modal('saveTemplate')->close();

@@ -28,9 +28,15 @@
             {{ __('Pick a template, shape your sitemap, customize every section, and export clean Tailwind code.') }}
         </p>
         <div class="mt-10">
-            <flux:button variant="primary" size="base" href="{{ route('workspace') }}" wire:navigate icon="rocket-launch">
-                {{ __('Start Building') }}
-            </flux:button>
+            @auth
+                <flux:button variant="primary" size="base" href="{{ route('dashboard') }}" wire:navigate icon="rocket-launch">
+                    {{ __('Go to Dashboard') }}
+                </flux:button>
+            @else
+                <flux:button variant="primary" size="base" href="{{ route('login') }}" wire:navigate icon="rocket-launch">
+                    {{ __('Start Building') }}
+                </flux:button>
+            @endauth
         </div>
     </main>
 

@@ -4,9 +4,9 @@
 >
     <!-- Top App Bar -->
     <header class="flex items-center justify-between gap-4 border-b border-zinc-200 bg-white px-4 py-2.5 dark:border-zinc-700 dark:bg-zinc-900">
-        <!-- Left: Logo + Template -->
+        <!-- Left: Logo -->
         <div class="flex items-center gap-3">
-            <a href="{{ route('home') }}" wire:navigate class="flex items-center gap-2">
+            <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2">
                 <div class="flex h-7 w-7 items-center justify-center rounded-md bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -16,11 +16,6 @@
                     </svg>
                 </div>
             </a>
-            <flux:select wire:model.live="currentTemplate" placeholder="{{ __('Choose template...') }}" class="min-w-[160px]" size="sm">
-                @foreach ($this->templates as $template)
-                    <flux:select.option value="{{ $template['filename'] }}">{{ $template['name'] }}</flux:select.option>
-                @endforeach
-            </flux:select>
         </div>
 
         <!-- Center: Page name -->

@@ -3,36 +3,44 @@
 use App\Models\User;
 use Livewire\Livewire;
 
-it('renders the workspace for guests', function () {
+it('redirects guests from the workspace', function () {
     $response = $this->get(route('workspace'));
+
+    $response->assertRedirect(route('login'));
+});
+
+it('allows authenticated users to access the workspace', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('workspace'));
 
     $response->assertOk();
     $response->assertSee(__('Sitemap'));
 });
 
 it('starts with a default home page', function () {
-    Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->assertSet('selectedPageId', 'home')
         ->assertSee('Home');
 });
 
-it('loads a template', function () {
-    Livewire::test('pages::proto.workspace')
-        ->set('currentTemplate', 'football-site')
+it('loads a template via route parameter', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace', ['template' => 'football-site'])
         ->assertSet('templateName', 'Football Site')
         ->assertSee('Fixtures');
 });
 
-it('adds a page', function () {
-    Livewire::test('pages::proto.workspace')
-        ->set('newPageName', 'About Us')
-        ->call('addPage')
-        ->assertSee('About Us');
-});
-
 it('deletes a page with its children', function () {
-    $component = Livewire::test('pages::proto.workspace')
-        ->set('currentTemplate', 'football-site')
+    $user = User::factory()->create();
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::proto.workspace', ['template' => 'football-site'])
         ->set('deletingPageId', 'teams')
         ->call('deletePage');
 
@@ -44,7 +52,10 @@ it('deletes a page with its children', function () {
 });
 
 it('adds and removes sections', function () {
-    $component = Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->call('addSection', 'content', 'grid');
 
     $sections = collect($component->get('pages'))->firstWhere('id', 'home')['sections'];
@@ -55,13 +66,6 @@ it('adds and removes sections', function () {
 
     $sections = collect($component->get('pages'))->firstWhere('id', 'home')['sections'];
     expect(collect($sections)->pluck('preset'))->not->toContain('grid');
-});
-
-it('forbids guests from saving templates', function () {
-    Livewire::test('pages::proto.workspace')
-        ->set('saveFilename', 'my-template')
-        ->call('saveTemplate')
-        ->assertForbidden();
 });
 
 it('allows authenticated users to save templates', function () {
@@ -79,13 +83,19 @@ it('allows authenticated users to save templates', function () {
 });
 
 it('exports all pages as a ZIP download', function () {
-    Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->call('export')
         ->assertFileDownloaded('untitled.zip');
 });
 
 it('shows the export modal with format options', function () {
-    Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->assertSee(__('Export Site'))
         ->assertSee(__('HTML (Standalone)'))
         ->assertSee(__('Laravel Livewire'))
@@ -94,9 +104,10 @@ it('shows the export modal with format options', function () {
 });
 
 it('exports multiple pages as separate HTML files in ZIP', function () {
-    $zipPath = tempnam(sys_get_temp_dir(), 'test_zip_');
+    $user = User::factory()->create();
 
-    Livewire::test('pages::proto.workspace')
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->set('newPageName', 'About')
         ->call('addPage')
         ->call('export')
@@ -104,24 +115,22 @@ it('exports multiple pages as separate HTML files in ZIP', function () {
 });
 
 it('switches page via select-page-from-preview event', function () {
-    Livewire::test('pages::proto.workspace')
-        ->set('currentTemplate', 'football-site')
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace', ['template' => 'football-site'])
         ->dispatch('select-page-from-preview', id: 'teams')
         ->assertSet('selectedPageId', 'teams');
 });
 
 it('loads a branding preset', function () {
-    Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->set('currentBrandingPreset', 'ocean')
         ->assertSet('branding.primary_color', '#0ea5e9')
         ->assertSet('branding.font_family', 'Inter');
-});
-
-it('forbids guests from saving branding presets', function () {
-    Livewire::test('pages::proto.workspace')
-        ->set('saveBrandingName', 'test-preset')
-        ->call('saveBranding')
-        ->assertForbidden();
 });
 
 it('allows authenticated users to save branding presets', function () {
@@ -139,7 +148,10 @@ it('allows authenticated users to save branding presets', function () {
 });
 
 it('generates preview HTML with dynamic nav and link interception', function () {
-    $component = Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->set('newPageName', 'About')
         ->call('addPage');
 
@@ -151,7 +163,10 @@ it('generates preview HTML with dynamic nav and link interception', function () 
 });
 
 it('toggles panel visibility', function () {
-    Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->assertSet('showSitemap', true)
         ->call('togglePanel', 'sitemap')
         ->assertSet('showSitemap', false)
@@ -164,7 +179,10 @@ it('toggles panel visibility', function () {
 });
 
 it('sets preview width', function () {
-    Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->assertSet('previewWidth', 'desktop')
         ->call('setPreviewWidth', 'mobile')
         ->assertSet('previewWidth', 'mobile')
@@ -173,21 +191,30 @@ it('sets preview width', function () {
 });
 
 it('saves current branding as light theme', function () {
-    Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->set('branding.primary_color', '#ff0000')
         ->call('saveLightTheme')
         ->assertSet('lightThemeBranding.primary_color', '#ff0000');
 });
 
 it('saves current branding as dark theme', function () {
-    Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->set('branding.primary_color', '#ff0000')
         ->call('saveDarkTheme')
         ->assertSet('darkThemeBranding.primary_color', '#ff0000');
 });
 
 it('uses dark theme branding in preview when set', function () {
-    $component = Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->set('darkThemeBranding', [
             'primary_color' => '#0ea5e9',
             'secondary_color' => '#0369a1',
@@ -204,7 +231,10 @@ it('uses dark theme branding in preview when set', function () {
 });
 
 it('uses light theme branding in preview when set', function () {
-    $component = Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->set('lightThemeBranding', [
             'primary_color' => '#0ea5e9',
             'secondary_color' => '#0369a1',
@@ -221,7 +251,10 @@ it('uses light theme branding in preview when set', function () {
 });
 
 it('reflects live branding changes in preview immediately', function () {
-    $component = Livewire::test('pages::proto.workspace')
+    $user = User::factory()->create();
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::proto.workspace')
         ->set('branding.background_color', '#abcdef');
 
     $html = $component->get('previewHtml');
